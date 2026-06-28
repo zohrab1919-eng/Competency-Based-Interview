@@ -53,11 +53,12 @@ export default function InterviewPage() {
 
   const persistSession = useCallback((updated: ParticipantSession) => {
     saveParticipantSession(updated);
-    const config = loadFacilitatorConfig();
-    const idx = config.sessions.findIndex((s) => s.id === updated.id);
-    if (idx >= 0) config.sessions[idx] = updated;
-    else config.sessions.push(updated);
-    saveFacilitatorConfig(config);
+    // Sync to server so facilitator dashboard stays updated
+    fetch('/api/sessions', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated),
+    }).catch(() => {});
   }, []);
 
   async function sendMessage() {

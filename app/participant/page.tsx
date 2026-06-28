@@ -45,16 +45,15 @@ export default function ParticipantJoinPage() {
 
     saveParticipantSession(session);
 
-    // Register session in facilitator config if on same browser
+    // Register on server so facilitator dashboard can see this participant
     try {
-      if (config) {
-        const existing = config.sessions.findIndex((s) => s.participantName === name.trim());
-        if (existing < 0) config.sessions.push(session);
-        else config.sessions[existing] = session;
-        saveFacilitatorConfig(config);
-      }
+      await fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(session),
+      });
     } catch {
-      // Fine — participant is on a different device
+      // Non-fatal — interview still works
     }
 
     router.push('/participant/interview');

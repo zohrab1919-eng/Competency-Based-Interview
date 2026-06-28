@@ -48,11 +48,12 @@ export default function DebriefPage() {
         if (data.error) throw new Error(data.error);
         const updatedSession = { ...s, debrief: data as DebriefReportType };
         saveParticipantSession(updatedSession);
-        // Update facilitator config
-        const cfg = loadFacilitatorConfig();
-        const idx = cfg.sessions.findIndex((x) => x.id === s.id);
-        if (idx >= 0) cfg.sessions[idx] = updatedSession;
-        saveFacilitatorConfig(cfg);
+        // Sync to server
+        fetch('/api/sessions', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedSession),
+        }).catch(() => {});
         setReport(data as DebriefReportType);
         setSession(updatedSession);
       })

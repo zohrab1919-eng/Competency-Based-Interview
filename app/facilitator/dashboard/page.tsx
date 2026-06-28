@@ -25,12 +25,26 @@ export default function DashboardPage() {
   const [newPin, setNewPin] = useState('');
   const [pinSuccess, setPinSuccess] = useState('');
   const [viewingDebrief, setViewingDebrief] = useState<ParticipantSession | null>(null);
+  const [serverSessions, setServerSessions] = useState<ParticipantSession[]>([]);
 
   useEffect(() => {
     const auth = sessionStorage.getItem('cbi_facilitator_auth');
     if (auth !== 'true') { router.push('/facilitator'); return; }
     setConfig(loadFacilitatorConfig());
   }, [router]);
+
+  // Poll server for participant sessions every 8 seconds
+  useEffect(() => {
+    function fetchSessions() {
+      fetch('/api/sessions')
+        .then((r) => r.json())
+        .then((data) => setServerSessions(data as ParticipantSession[]))
+        .catch(() => {});
+    }
+    fetchSessions();
+    const interval = setInterval(fetchSessions, 8000);
+    return () => clearInterval(interval);
+  }, []);
 
   function save(updated: FacilitatorConfig) {
     saveFacilitatorConfig(updated);
@@ -104,18 +118,16 @@ export default function DashboardPage() {
   }
 
   function resetSession(sessionId: string) {
-    if (!config) return;
-    const sessions = config.sessions.map((s) =>
-      s.id === sessionId
-        ? { ...s, messages: [], starCoverageByCompetency: {}, competenciesExplored: [], candidateQuestionsOffered: false, candidateQuestionsAsked: [], hireDecision: undefined, debrief: undefined, status: 'not_started' as const, startedAt: undefined, completedAt: undefined }
-        : s
-    );
-    save({ ...config, sessions });
+    fetch(`/api/sessions?id=${sessionId}`, { method: 'DELETE' })
+      .then(() => {
+        setServerSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      })
+      .catch(() => {});
   }
 
   if (!config) return null;
 
-  const completedSessions = config.sessions.filter((s) => s.status === 'completed');
+  const completedSessions = serverSessions.filter((s) => s.status === 'completed');
   const avgStar = completedSessions.length ? Math.round(completedSessions.reduce((acc, s) => acc + (s.debrief?.starCoverageScore || 0), 0) / completedSessions.length) : null;
   const avgConv = completedSessions.length ? Math.round(completedSessions.reduce((acc, s) => acc + (s.debrief?.conversationalTechniqueScore || 0), 0) / completedSessions.length) : null;
   const avgCx = completedSessions.length ? Math.round(completedSessions.reduce((acc, s) => acc + (s.debrief?.candidateExperienceScore || 0), 0) / completedSessions.length) : null;
@@ -221,9 +233,9 @@ export default function DashboardPage() {
             {/* Sessions table */}
             <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: '#E2E4EF' }}>
               <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: '#E2E4EF' }}>
-                <span className="text-sm font-semibold" style={{ color: '#1A1A2E' }}>Participants ({config.sessions.length})</span>
+                <span className="text-sm font-semibold" style={{ color: '#1A1A2E' }}>Participants ({serverSessions.length})</span>
               </div>
-              {config.sessions.length === 0 ? (
+              {serverSessions.length === 0 ? (
                 <div className="px-4 py-8 text-center text-sm" style={{ color: '#5A5A7A' }}>
                   No participants have joined yet. Share the session code above.
                 </div>
@@ -241,7 +253,7 @@ export default function DashboardPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {config.sessions.map((s) => {
+                      {serverSessions.map((s) => {
                         const persona = config.personas.find((p) => p.id === s.personaId);
                         return (
                           <tr key={s.id} className="border-t" style={{ borderColor: '#E2E4EF' }}>
