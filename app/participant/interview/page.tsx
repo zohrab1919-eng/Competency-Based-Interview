@@ -243,9 +243,10 @@ export default function InterviewPage() {
           STAR {showTracker ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
         </button>
 
+        {/* End interview — hidden on mobile (shown at bottom instead) */}
         <button
           onClick={handleEndInterview}
-          className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
+          className="hidden sm:block px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
           style={{ backgroundColor: '#1C2C6E' }}
         >
           End interview
@@ -316,8 +317,19 @@ export default function InterviewPage() {
         <div ref={messagesEndRef} />
       </main>
 
+      {/* Mobile-only End Interview button */}
+      <div className="sm:hidden px-4 pt-3 bg-white border-t" style={{ borderColor: '#E2E4EF' }}>
+        <button
+          onClick={handleEndInterview}
+          className="w-full py-2.5 rounded-xl text-sm font-semibold text-white"
+          style={{ backgroundColor: '#1C2C6E' }}
+        >
+          End interview
+        </button>
+      </div>
+
       {/* Input */}
-      <div className="bg-white border-t px-4 py-3" style={{ borderColor: '#E2E4EF' }}>
+      <div className="bg-white border-t px-4 py-3 sm:border-t-0" style={{ borderColor: '#E2E4EF' }}>
         <div className="max-w-2xl mx-auto flex gap-3 items-end">
           <textarea
             ref={inputRef}
