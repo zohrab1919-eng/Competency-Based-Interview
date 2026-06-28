@@ -7,12 +7,14 @@ import {
   DebriefReport,
 } from './types';
 
-const client = new OpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY,
-  baseURL: 'https://api.deepseek.com',
-});
-
 const MODEL = 'deepseek-chat';
+
+function getClient() {
+  return new OpenAI({
+    apiKey: process.env.DEEPSEEK_API_KEY,
+    baseURL: 'https://api.deepseek.com',
+  });
+}
 
 function formatWorkHistory(persona: CandidatePersona): string {
   return persona.workHistory
@@ -88,7 +90,7 @@ export async function generatePersonaResponseStream(
     { role: 'user' as const, content: newManagerMessage },
   ];
 
-  const stream = await client.chat.completions.create({
+  const stream = await getClient().chat.completions.create({
     model: MODEL,
     max_tokens: 1024,
     stream: true,
@@ -112,7 +114,7 @@ export async function generatePersonaResponseStream(
 }
 
 async function callJson<T>(prompt: string, maxTokens = 512): Promise<T> {
-  const response = await client.chat.completions.create({
+  const response = await getClient().chat.completions.create({
     model: MODEL,
     max_tokens: maxTokens,
     messages: [{ role: 'user', content: prompt }],
