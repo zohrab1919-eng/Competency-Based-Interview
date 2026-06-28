@@ -2,43 +2,38 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { loadFacilitatorConfig, saveFacilitatorConfig, saveParticipantSession, generateId, getEnvSessionCode } from '@/lib/storage';
+import { saveParticipantSession, generateId, loadFacilitatorConfig, saveFacilitatorConfig } from '@/lib/storage';
 import { ParticipantSession } from '@/lib/types';
+import { defaultJDs, defaultPersonas } from '@/lib/defaults';
 import { UserCircle } from 'lucide-react';
 
 export default function ParticipantJoinPage() {
   const router = useRouter();
   const [name, setName] = useState('');
-  const [code, setCode] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
-    if (!name.trim()) { setError('Please enter your name.'); return; }
-    if (code.trim().length !== 4) { setError('Session code must be 4 characters.'); return; }
-
+    if (!name.trim() || loading) return;
     setLoading(true);
-    const config = loadFacilitatorConfig();
-    const envCode = getEnvSessionCode();
-    const validCode = envCode || config.sessionCode;
 
-    if (code.toUpperCase() !== validCode.toUpperCase()) {
-      setError("That session code doesn't match an active session. Check with your facilitator.");
-      setLoading(false);
-      return;
+    // Load facilitator config if available (facilitator's browser), otherwise use defaults
+    let config;
+    try {
+      config = loadFacilitatorConfig();
+    } catch {
+      config = null;
     }
 
-    // Determine persona
-    const personaId = config.assignedPersonas[name.trim()] || config.activePersonaId;
+    const activeJdId = config?.activeJdId || defaultJDs[0].id;
+    const activePersonaId = config?.assignedPersonas?.[name.trim()] || config?.activePersonaId || defaultPersonas[0].id;
 
     const session: ParticipantSession = {
       id: generateId(),
       participantName: name.trim(),
-      sessionCode: code.toUpperCase(),
-      jdId: config.activeJdId,
-      personaId,
+      sessionCode: 'OPEN',
+      jdId: activeJdId,
+      personaId: activePersonaId,
       status: 'not_started',
       messages: [],
       starCoverageByCompetency: {},
@@ -50,14 +45,17 @@ export default function ParticipantJoinPage() {
 
     saveParticipantSession(session);
 
-    // Register in facilitator config
-    const existing = config.sessions.findIndex(
-      (s) => s.participantName === name.trim() && s.sessionCode === code.toUpperCase()
-    );
-    if (existing < 0) {
-      config.sessions.push(session);
+    // Register session in facilitator config if on same browser
+    try {
+      if (config) {
+        const existing = config.sessions.findIndex((s) => s.participantName === name.trim());
+        if (existing < 0) config.sessions.push(session);
+        else config.sessions[existing] = session;
+        saveFacilitatorConfig(config);
+      }
+    } catch {
+      // Fine — participant is on a different device
     }
-    saveFacilitatorConfig(config);
 
     router.push('/participant/interview');
   }
@@ -70,7 +68,7 @@ export default function ParticipantJoinPage() {
             <UserCircle size={30} />
           </div>
           <h1 className="text-2xl font-semibold" style={{ color: '#1A1A2E' }}>Join session</h1>
-          <p className="text-sm mt-1" style={{ color: '#5A5A7A' }}>Enter your details to begin your practice interview</p>
+          <p className="text-sm mt-1" style={{ color: '#5A5A7A' }}>Enter your name to begin your practice interview</p>
         </div>
 
         <div className="bg-white rounded-xl border shadow-sm p-6" style={{ borderColor: '#E2E4EF' }}>
@@ -88,34 +86,20 @@ export default function ParticipantJoinPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: '#1A1A2E' }}>Session code</label>
-              <input
-                type="text"
-                maxLength={4}
-                className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 uppercase tracking-widest text-center text-xl font-bold"
-                style={{ borderColor: '#E2E4EF', color: '#1C2C6E' }}
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="XXXX"
-              />
-              <p className="text-xs mt-1" style={{ color: '#5A5A7A' }}>Get the session code from your facilitator</p>
-            </div>
-
-            {error && (
-              <div className="rounded-lg p-3 text-sm" style={{ backgroundColor: '#FEF2F2', color: '#991B1B' }}>{error}</div>
-            )}
-
             <button
               type="submit"
-              disabled={loading}
+              disabled={!name.trim() || loading}
               className="w-full py-3 rounded-lg font-semibold text-white disabled:opacity-60"
               style={{ backgroundColor: '#1A7B8A' }}
             >
-              {loading ? 'Joining...' : 'Start interview'}
+              {loading ? 'Starting...' : 'Start interview'}
             </button>
           </form>
         </div>
+
+        <p className="text-center text-xs mt-4" style={{ color: '#5A5A7A' }}>
+          Go to <span className="font-medium">competency-based-interview-production.up.railway.app</span>
+        </p>
       </div>
     </div>
   );
