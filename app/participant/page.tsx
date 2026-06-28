@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { loadFacilitatorConfig, saveFacilitatorConfig, saveParticipantSession, generateId } from '@/lib/storage';
+import { loadFacilitatorConfig, saveFacilitatorConfig, saveParticipantSession, generateId, getEnvSessionCode } from '@/lib/storage';
 import { ParticipantSession } from '@/lib/types';
 import { UserCircle } from 'lucide-react';
 
@@ -21,8 +21,10 @@ export default function ParticipantJoinPage() {
 
     setLoading(true);
     const config = loadFacilitatorConfig();
+    const envCode = getEnvSessionCode();
+    const validCode = envCode || config.sessionCode;
 
-    if (code.toUpperCase() !== config.sessionCode.toUpperCase()) {
+    if (code.toUpperCase() !== validCode.toUpperCase()) {
       setError("That session code doesn't match an active session. Check with your facilitator.");
       setLoading(false);
       return;

@@ -15,10 +15,16 @@ export function generateSessionCode(): string {
   return Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
+// The env var SESSION_CODE acts as the shared code across all browsers.
+// Falls back to a random code only for local dev without the env var.
+export function getEnvSessionCode(): string {
+  return process.env.NEXT_PUBLIC_SESSION_CODE || '';
+}
+
 function getDefaultConfig(): FacilitatorConfig {
   return {
     pin: process.env.NEXT_PUBLIC_FACILITATOR_PIN || '1234',
-    sessionCode: generateSessionCode(),
+    sessionCode: getEnvSessionCode() || generateSessionCode(),
     activeJdId: defaultJDs[0].id,
     activePersonaId: defaultPersonas[0].id,
     assignedPersonas: {},
@@ -34,9 +40,10 @@ export function loadFacilitatorConfig(): FacilitatorConfig {
     const raw = localStorage.getItem(FACILITATOR_CONFIG_KEY);
     if (!raw) return getDefaultConfig();
     const parsed = JSON.parse(raw) as FacilitatorConfig;
-    // Merge in defaults if missing
     if (!parsed.jds || parsed.jds.length === 0) parsed.jds = defaultJDs;
     if (!parsed.personas || parsed.personas.length === 0) parsed.personas = defaultPersonas;
+    // Always keep session code in sync with env var if set
+    if (getEnvSessionCode()) parsed.sessionCode = getEnvSessionCode();
     return parsed;
   } catch {
     return getDefaultConfig();
