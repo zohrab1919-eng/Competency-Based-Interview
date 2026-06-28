@@ -221,7 +221,7 @@ export function PersonaBuilder({ initial, onSave, onCancel }: Props) {
       {/* Quick Entry */}
       {tab === 'quick' && (
         <div className="space-y-3">
-          <p className="text-sm" style={{ color: '#5A5A7A' }}>Paste any information about the candidate — CV text, notes, a summary. We'll extract what we can.</p>
+          <p className="text-sm" style={{ color: '#5A5A7A' }}>Paste any information about the candidate — CV text, notes, a summary. We&apos;ll extract what we can.</p>
           <textarea
             className="w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none"
             style={{ borderColor: '#E2E4EF' }}

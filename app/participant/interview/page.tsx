@@ -141,7 +141,7 @@ export default function InterviewPage() {
     managerQ: string,
     candidateR: string,
     currentJd: JobDescription,
-    currentPersona: CandidatePersona
+    _currentPersona: CandidatePersona
   ) {
     try {
       // STAR analysis for each leadership behaviour
@@ -355,7 +355,7 @@ export default function InterviewPage() {
               <span className="font-semibold" style={{ color: '#1A1A2E' }}>Ending early</span>
             </div>
             <p className="text-sm mb-5" style={{ color: '#5A5A7A' }}>
-              You've covered {session.competenciesExplored.length} of the recommended 3 competency areas. Ending now will affect your debrief scores.
+              You&apos;ve covered {session.competenciesExplored.length} of the recommended 3 competency areas. Ending now will affect your debrief scores.
             </p>
             <div className="flex gap-3">
               <button onClick={() => { setShowEndWarning(false); setShowHireForm(true); }} className="flex-1 py-2 rounded-lg text-sm font-semibold border" style={{ borderColor: '#E2E4EF', color: '#5A5A7A' }}>

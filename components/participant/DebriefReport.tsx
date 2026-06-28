@@ -1,7 +1,7 @@
 'use client';
 
 import { DebriefReport as DebriefReportType } from '@/lib/types';
-import { Star, MessageSquare } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 
 interface Props {
   report: DebriefReportType;
@@ -23,7 +23,7 @@ function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((n) => (
-        <Star key={n} size={20} fill={n <= rating ? '#C9973A' : 'none'} color={n <= rating ? '#C9973A' : '#E2E4EF'} />
+        <span key={n} style={{ color: n <= rating ? '#C9973A' : '#E2E4EF', fontSize: 20 }}>★</span>
       ))}
     </div>
   );
