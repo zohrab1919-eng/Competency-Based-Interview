@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Briefcase, Users, Settings, Copy, Check, Plus,
-  Edit2, Trash2, Star, RefreshCw, Download
+  Edit2, Trash2, Star, RefreshCw, Download, Link
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { loadFacilitatorConfig, saveFacilitatorConfig, generateSessionCode } from '@/lib/storage';
 import { FacilitatorConfig, JobDescription, CandidatePersona, ParticipantSession } from '@/lib/types';
 import { JDBuilder } from '@/components/facilitator/JDBuilder';
@@ -26,11 +27,14 @@ export default function DashboardPage() {
   const [pinSuccess, setPinSuccess] = useState('');
   const [viewingDebrief, setViewingDebrief] = useState<ParticipantSession | null>(null);
   const [serverSessions, setServerSessions] = useState<ParticipantSession[]>([]);
+  const [participantUrl, setParticipantUrl] = useState('');
+  const [copiedUrl, setCopiedUrl] = useState(false);
 
   useEffect(() => {
     const auth = sessionStorage.getItem('cbi_facilitator_auth');
     if (auth !== 'true') { router.push('/facilitator'); return; }
     setConfig(loadFacilitatorConfig());
+    setParticipantUrl(`${window.location.origin}/participant`);
   }, [router]);
 
   // Poll server for participant sessions every 8 seconds
@@ -56,6 +60,12 @@ export default function DashboardPage() {
     navigator.clipboard.writeText(config.sessionCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  function copyUrl() {
+    navigator.clipboard.writeText(participantUrl);
+    setCopiedUrl(true);
+    setTimeout(() => setCopiedUrl(false), 2000);
   }
 
   function resetCode() {
@@ -190,17 +200,61 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-xl font-semibold mb-6" style={{ color: '#1A1A2E' }}>Session overview</h1>
 
-            {/* Session code */}
+            {/* Join card — QR + URL */}
             <div className="bg-white rounded-xl border p-5 mb-6" style={{ borderColor: '#E2E4EF' }}>
-              <div className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: '#5A5A7A' }}>Active session code — share this with participants</div>
-              <div className="flex items-center gap-3">
-                <span className="text-4xl font-bold tracking-widest" style={{ color: '#1C2C6E' }}>{config.sessionCode}</span>
-                <button onClick={copyCode} className="p-2 rounded-lg transition-colors" style={{ backgroundColor: '#E8EBF7', color: '#1C2C6E' }}>
-                  {copied ? <Check size={18} /> : <Copy size={18} />}
-                </button>
-                <button onClick={resetCode} className="p-2 rounded-lg" style={{ backgroundColor: '#F3F4F6', color: '#5A5A7A' }} title="Generate new code">
-                  <RefreshCw size={18} />
-                </button>
+              <div className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#5A5A7A' }}>How participants join</div>
+              <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+
+                {/* QR Code */}
+                {participantUrl && (
+                  <div className="flex flex-col items-center gap-2 shrink-0">
+                    <div className="p-3 rounded-xl border" style={{ borderColor: '#E2E4EF', backgroundColor: '#fff' }}>
+                      <QRCodeSVG value={participantUrl} size={160} fgColor="#1C2C6E" bgColor="#ffffff" />
+                    </div>
+                    <span className="text-xs font-medium" style={{ color: '#5A5A7A' }}>Scan to join</span>
+                  </div>
+                )}
+
+                {/* Divider */}
+                <div className="hidden sm:flex flex-col items-center self-stretch gap-2">
+                  <div className="flex-1 w-px" style={{ backgroundColor: '#E2E4EF' }} />
+                  <span className="text-xs font-medium px-1" style={{ color: '#5A5A7A' }}>or</span>
+                  <div className="flex-1 w-px" style={{ backgroundColor: '#E2E4EF' }} />
+                </div>
+                <div className="sm:hidden w-full flex items-center gap-3">
+                  <div className="flex-1 h-px" style={{ backgroundColor: '#E2E4EF' }} />
+                  <span className="text-xs" style={{ color: '#5A5A7A' }}>or</span>
+                  <div className="flex-1 h-px" style={{ backgroundColor: '#E2E4EF' }} />
+                </div>
+
+                {/* URL share */}
+                <div className="flex-1 w-full">
+                  <div className="text-sm font-medium mb-2" style={{ color: '#1A1A2E' }}>Share the link</div>
+                  <div className="flex items-center gap-2 p-3 rounded-lg border" style={{ borderColor: '#E2E4EF', backgroundColor: '#F8F9FC' }}>
+                    <Link size={14} style={{ color: '#5A5A7A', flexShrink: 0 }} />
+                    <span className="text-xs flex-1 truncate font-mono" style={{ color: '#1C2C6E' }}>{participantUrl}</span>
+                    <button
+                      onClick={copyUrl}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition-colors"
+                      style={{ backgroundColor: copiedUrl ? '#D1FAE5' : '#E8EBF7', color: copiedUrl ? '#065F46' : '#1C2C6E' }}
+                    >
+                      {copiedUrl ? <Check size={13} /> : <Copy size={13} />}
+                      {copiedUrl ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                  <p className="text-xs mt-2" style={{ color: '#5A5A7A' }}>
+                    Paste into WhatsApp, email, or Teams for participants using a laptop.
+                  </p>
+
+                  <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: '#E8F4F6' }}>
+                    <div className="text-xs font-semibold mb-0.5" style={{ color: '#1A7B8A' }}>Instructions for participants</div>
+                    <ol className="text-xs space-y-0.5" style={{ color: '#1A7B8A' }}>
+                      <li>1. Open the link or scan the QR code</li>
+                      <li>2. Enter your name</li>
+                      <li>3. Click <strong>Start interview</strong></li>
+                    </ol>
+                  </div>
+                </div>
               </div>
             </div>
 
