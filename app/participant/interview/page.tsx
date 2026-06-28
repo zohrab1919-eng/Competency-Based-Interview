@@ -258,7 +258,7 @@ export default function InterviewPage() {
         <button
           onClick={handleEndInterview}
           className="hidden sm:block px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
-          style={{ backgroundColor: '#1C2C6E' }}
+          style={{ backgroundColor: '#991B1B' }}
         >
           End interview
         </button>
@@ -351,7 +351,7 @@ export default function InterviewPage() {
             onClick={sendMessage}
             disabled={!input.trim() || streaming}
             className="p-2.5 rounded-xl text-white disabled:opacity-40 transition-opacity"
-            style={{ backgroundColor: '#1C2C6E' }}
+            style={{ backgroundColor: '#1A7B8A' }}
           >
             <Send size={18} />
           </button>
@@ -363,7 +363,7 @@ export default function InterviewPage() {
           <button
             onClick={handleEndInterview}
             className="w-full py-2.5 rounded-xl text-sm font-semibold text-white"
-            style={{ backgroundColor: '#1C2C6E' }}
+            style={{ backgroundColor: '#991B1B' }}
           >
             End interview
           </button>
