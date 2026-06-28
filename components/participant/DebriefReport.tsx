@@ -31,6 +31,7 @@ function StarRating({ rating }: { rating: number }) {
 
 const recommendationStyles = {
   hire: { bg: '#D1FAE5', text: '#065F46', label: 'Hire recommended' },
+  kiv: { bg: '#FEF3C7', text: '#92400E', label: 'Keep In View (KIV)' },
   no_hire: { bg: '#FEE2E2', text: '#991B1B', label: 'No hire' },
   borderline: { bg: '#FEF3C7', text: '#92400E', label: 'Borderline' },
 };
@@ -72,6 +73,30 @@ export function DebriefReport({ report, personaName }: Props) {
           <div className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#1A7B8A' }}>S.T.A.R. Coverage</div>
           <div className="text-3xl font-bold mb-3" style={{ color: '#1A1A2E' }}>{report.starCoverageScore}%</div>
           <ScoreBar score={report.starCoverageScore} />
+          {report.starElementBreakdown && (
+            <div className="mt-4 space-y-2">
+              <div className="text-xs font-medium mb-2" style={{ color: '#5A5A7A' }}>Breakdown by element</div>
+              {(
+                [
+                  { key: 'situation', label: 'Situation' },
+                  { key: 'task', label: 'Task' },
+                  { key: 'action', label: 'Action' },
+                  { key: 'result', label: 'Result' },
+                ] as const
+              ).map(({ key, label }) => (
+                <div key={key} className="flex items-center gap-2">
+                  <span className="text-xs w-16 shrink-0 font-medium" style={{ color: '#5A5A7A' }}>{label}</span>
+                  <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor: '#E2E4EF' }}>
+                    <div
+                      className="h-1.5 rounded-full"
+                      style={{ width: `${report.starElementBreakdown![key]}%`, backgroundColor: '#1A7B8A' }}
+                    />
+                  </div>
+                  <span className="text-xs font-semibold w-8 text-right" style={{ color: '#1A1A2E' }}>{report.starElementBreakdown![key]}%</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Conversational Technique */}

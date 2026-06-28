@@ -84,13 +84,14 @@ export interface CandidateQuestion {
 }
 
 export interface HireDecision {
-  decision: 'hire' | 'no_hire';
+  decision: 'hire' | 'kiv' | 'no_hire';
   rating: 1 | 2 | 3 | 4 | 5;
   rationale: string;
 }
 
 export interface DebriefReport {
   starCoverageScore: number;
+  starElementBreakdown?: { situation: number; task: number; action: number; result: number };
   conversationalTechniqueScore: number;
   candidateExperienceScore: number;
   hireDecisionAccuracy: 'aligned' | 'over_rated' | 'under_rated';

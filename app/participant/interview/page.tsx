@@ -18,7 +18,7 @@ import {
 import { mergeStarCoverage, emptyCoverage } from '@/lib/star-analysis';
 import { HireDecisionForm } from '@/components/participant/HireDecisionForm';
 import { StarTracker } from '@/components/participant/StarTracker';
-import { Send, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
+import { Send, ChevronDown, ChevronUp, AlertTriangle, UserCircle, X } from 'lucide-react';
 
 export default function InterviewPage() {
   const router = useRouter();
@@ -28,6 +28,7 @@ export default function InterviewPage() {
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState(false);
   const [showTracker, setShowTracker] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [showHireForm, setShowHireForm] = useState(false);
   const [showEndWarning, setShowEndWarning] = useState(false);
   const [aiError, setAiError] = useState('');
@@ -236,6 +237,16 @@ export default function InterviewPage() {
         </div>
 
         <button
+          onClick={() => setShowProfile(true)}
+          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium"
+          style={{ backgroundColor: '#F3F4F6', color: '#5A5A7A' }}
+          title="View candidate profile & JD"
+        >
+          <UserCircle size={14} />
+          <span className="hidden sm:inline">Profile</span>
+        </button>
+
+        <button
           onClick={() => setShowTracker(!showTracker)}
           className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium"
           style={{ backgroundColor: '#E8F4F6', color: '#1A7B8A' }}
@@ -317,19 +328,8 @@ export default function InterviewPage() {
         <div ref={messagesEndRef} />
       </main>
 
-      {/* Mobile-only End Interview button */}
-      <div className="sm:hidden px-4 pt-3 bg-white border-t" style={{ borderColor: '#E2E4EF' }}>
-        <button
-          onClick={handleEndInterview}
-          className="w-full py-2.5 rounded-xl text-sm font-semibold text-white"
-          style={{ backgroundColor: '#1C2C6E' }}
-        >
-          End interview
-        </button>
-      </div>
-
       {/* Input */}
-      <div className="bg-white border-t px-4 py-3 sm:border-t-0" style={{ borderColor: '#E2E4EF' }}>
+      <div className="bg-white border-t px-4 py-3" style={{ borderColor: '#E2E4EF' }}>
         <div className="max-w-2xl mx-auto flex gap-3 items-end">
           <textarea
             ref={inputRef}
@@ -357,6 +357,17 @@ export default function InterviewPage() {
           </button>
         </div>
         <p className="text-center text-xs mt-1" style={{ color: '#5A5A7A' }}>Press Enter to send · Shift+Enter for new line</p>
+
+        {/* End interview — full width below input on mobile, hidden on desktop (handled in top bar) */}
+        <div className="sm:hidden mt-3">
+          <button
+            onClick={handleEndInterview}
+            className="w-full py-2.5 rounded-xl text-sm font-semibold text-white"
+            style={{ backgroundColor: '#1C2C6E' }}
+          >
+            End interview
+          </button>
+        </div>
       </div>
 
       {/* End interview warning */}
@@ -387,6 +398,67 @@ export default function InterviewPage() {
           onSubmit={handleHireDecision}
           onCancel={() => setShowHireForm(false)}
         />
+      )}
+
+      {/* Candidate profile & JD modal */}
+      {showProfile && persona && jd && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-0 sm:px-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-xl w-full sm:max-w-lg max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: '#E2E4EF' }}>
+              <span className="font-semibold" style={{ color: '#1A1A2E' }}>Candidate profile</span>
+              <button onClick={() => setShowProfile(false)} className="p-1 rounded-lg" style={{ color: '#5A5A7A' }}>
+                <X size={18} />
+              </button>
+            </div>
+            <div className="overflow-y-auto px-5 py-4 space-y-5 text-sm">
+              {/* JD */}
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#1C2C6E' }}>Position applied for</div>
+                <div className="font-semibold mb-1" style={{ color: '#1A1A2E' }}>{jd.title}</div>
+                <p className="leading-relaxed" style={{ color: '#5A5A7A' }}>{jd.description}</p>
+                {jd.leadershipBehaviours.length > 0 && (
+                  <div className="mt-3">
+                    <div className="text-xs font-medium mb-1.5" style={{ color: '#5A5A7A' }}>Key competencies assessed</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {jd.leadershipBehaviours.map((b) => (
+                        <span key={b} className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: '#EDE9FE', color: '#6B3FA0' }}>{b}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Candidate */}
+              <div className="border-t pt-4" style={{ borderColor: '#E2E4EF' }}>
+                <div className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#1A7B8A' }}>Candidate</div>
+                <div className="font-semibold mb-0.5" style={{ color: '#1A1A2E' }}>{persona.name}</div>
+                <div className="text-xs mb-2" style={{ color: '#5A5A7A' }}>{persona.currentRole}</div>
+                {persona.background && (
+                  <p className="leading-relaxed" style={{ color: '#5A5A7A' }}>{persona.background}</p>
+                )}
+                {persona.keyStrengths && persona.keyStrengths.length > 0 && (
+                  <div className="mt-3">
+                    <div className="text-xs font-medium mb-1.5" style={{ color: '#5A5A7A' }}>Strengths on CV</div>
+                    <ul className="space-y-1">
+                      {persona.keyStrengths.map((s, i) => (
+                        <li key={i} className="flex gap-2"><span style={{ color: '#1A7B8A' }}>•</span><span style={{ color: '#1A1A2E' }}>{s}</span></li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {persona.developmentAreas && persona.developmentAreas.length > 0 && (
+                  <div className="mt-3">
+                    <div className="text-xs font-medium mb-1.5" style={{ color: '#5A5A7A' }}>Development areas to probe</div>
+                    <ul className="space-y-1">
+                      {persona.developmentAreas.map((d, i) => (
+                        <li key={i} className="flex gap-2"><span style={{ color: '#C9973A' }}>•</span><span style={{ color: '#1A1A2E' }}>{d}</span></li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

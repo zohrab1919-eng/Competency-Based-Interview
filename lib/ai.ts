@@ -222,10 +222,11 @@ ${hireDecisionText}
 
 Generate a comprehensive debrief. Return a JSON object with exactly these keys:
 {
-  "starCoverageScore": number 0-100,
+  "starCoverageScore": number 0-100 (overall average STAR coverage across all competencies),
+  "starElementBreakdown": { "situation": number 0-100, "task": number 0-100, "action": number 0-100, "result": number 0-100 } (how well each individual STAR element was probed on average — e.g. if the interviewer always got the Situation and Action but missed Results, Result score would be low),
   "conversationalTechniqueScore": number 0-100,
   "candidateExperienceScore": number 0-100,
-  "hireDecisionAccuracy": "aligned" or "over_rated" or "under_rated",
+  "hireDecisionAccuracy": "aligned" or "over_rated" or "under_rated" (treat "kiv" as a cautious/borderline decision when comparing),
   "aiHireRecommendation": "hire" or "no_hire" or "borderline",
   "aiHireRationale": "2-3 sentence string",
   "developmentalObservations": ["string","string","string","string"],

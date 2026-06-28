@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function HireDecisionForm({ onSubmit, onCancel }: Props) {
-  const [decision, setDecision] = useState<'hire' | 'no_hire' | null>(null);
+  const [decision, setDecision] = useState<'hire' | 'kiv' | 'no_hire' | null>(null);
   const [rating, setRating] = useState<number>(0);
   const [rationale, setRationale] = useState('');
   const [error, setError] = useState('');
@@ -31,20 +31,29 @@ export function HireDecisionForm({ onSubmit, onCancel }: Props) {
         <div className="space-y-5">
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: '#1A1A2E' }}>Hire decision</label>
-            <div className="flex gap-3">
-              {(['hire', 'no_hire'] as const).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setDecision(d)}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-semibold border-2 transition-colors"
-                  style={decision === d
-                    ? { backgroundColor: d === 'hire' ? '#D1FAE5' : '#FEE2E2', color: d === 'hire' ? '#065F46' : '#991B1B', borderColor: d === 'hire' ? '#059669' : '#dc2626' }
-                    : { backgroundColor: '#fff', color: '#5A5A7A', borderColor: '#E2E4EF' }}
-                >
-                  {d === 'hire' ? 'Hire' : 'No hire'}
-                </button>
-              ))}
+            <div className="flex gap-2">
+              {(['hire', 'kiv', 'no_hire'] as const).map((d) => {
+                const labels = { hire: 'Hire', kiv: 'KIV', no_hire: 'No hire' };
+                const activeStyle = {
+                  hire: { backgroundColor: '#D1FAE5', color: '#065F46', borderColor: '#059669' },
+                  kiv: { backgroundColor: '#FEF3C7', color: '#92400E', borderColor: '#D97706' },
+                  no_hire: { backgroundColor: '#FEE2E2', color: '#991B1B', borderColor: '#dc2626' },
+                };
+                return (
+                  <button
+                    key={d}
+                    onClick={() => setDecision(d)}
+                    className="flex-1 py-2.5 rounded-lg text-sm font-semibold border-2 transition-colors"
+                    style={decision === d ? activeStyle[d] : { backgroundColor: '#fff', color: '#5A5A7A', borderColor: '#E2E4EF' }}
+                  >
+                    {labels[d]}
+                  </button>
+                );
+              })}
             </div>
+            {decision === 'kiv' && (
+              <p className="text-xs mt-1" style={{ color: '#92400E' }}>Keep In View — potential hire, pending further consideration or another interview.</p>
+            )}
           </div>
 
           <div>
